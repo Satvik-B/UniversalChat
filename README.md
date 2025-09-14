@@ -11,7 +11,7 @@ UniversalChat is an intelligent personal knowledge assistant that connects to yo
 - **Data Layer:** Firestore (primary DB), multiple Mem0 instances (content and relations memory)
 - **Cloud:** Google Cloud Platform (Cloud Run, Cloud Functions, Secret Manager)
 
-See `/docs/architecture.md` for detailed diagrams and explanations.
+See `/docs/architecture.md` for detailed diagrams, including the Low Level Design (LLD) for authentication. All major features require LLD review and confirmation before implementation.
 
 ## Technology Stack
 
