@@ -43,19 +43,43 @@ npm install
 npm run dev
 ```
 
-## Running Tests
+## Setup Instructions
 
-### Backend
+### 1. Install Poetry (Python dependency manager)
+If you don't have Poetry installed:
+```bash
+pip install poetry
+```
+
+### 2. Install Backend Dependencies
+From the `backend` directory:
 ```bash
 cd backend
-pytest
+poetry install
 ```
 
-### Frontend
+If you see errors about missing dependencies (e.g., `ModuleNotFoundError: No module named 'jwt'`), add them with:
+```bash
+poetry add pyjwt
+```
+
+### 3. Run Backend Tests
+From the `backend` directory:
+```bash
+PYTHONPATH=. poetry run pytest
+```
+
+### 4. Frontend Setup
+From the `frontend` directory:
 ```bash
 cd frontend
-npm test
+npm install
+npm run dev
 ```
+
+---
+
+For architecture diagrams, ADRs, and further documentation, see the `/docs` folder.
 
 ## Deployment Guide
 
@@ -71,7 +95,3 @@ npm test
    - Set up GitHub Actions to run tests and deploy on main branch merges.
 
 See `/docs/deployment.md` for detailed steps and environment variable documentation.
-
----
-
-For architecture diagrams, ADRs, and further documentation, see the `/docs` folder.
