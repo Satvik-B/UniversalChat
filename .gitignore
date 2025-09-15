@@ -55,3 +55,5 @@ htmlcov/
 *.tmp
 
 pyvenv.cfg
+
+backend/credentials/

@@ -2,6 +2,10 @@ import os
 from typing import Any, Optional
 from google.cloud import firestore
 from google.api_core.exceptions import NotFound
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 class FirestoreClient:
     """
@@ -13,10 +17,14 @@ class FirestoreClient:
         Initialize the Firestore client. Loads credentials from env var or uses default.
         """
         creds_path = credentials_path or os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
-        if creds_path:
+        
+        if creds_path and os.path.exists(creds_path):
             self.db = firestore.Client.from_service_account_json(creds_path)
         else:
-            self.db = firestore.Client()  # Uses default credentials (GCP or local auth)
+            try:
+                self.db = firestore.Client()  # Uses default credentials (GCP or local auth)
+            except Exception as e:
+                raise Exception(f"Failed to initialize Firestore client. Please set GOOGLE_APPLICATION_CREDENTIALS or authenticate with gcloud. Error: {e}")
 
     def get_user_token(self, user_id: str) -> Optional[str]:
         """
