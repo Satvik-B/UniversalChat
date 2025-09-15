@@ -57,16 +57,18 @@ From the `backend` directory:
 cd backend
 poetry install
 ```
+# Set Google Cloud credentials
+export GOOGLE_APPLICATION_CREDENTIALS="/Users/satvikb/Work/UniversalChat/backend/credentials/service-account.json"
 
-If you see errors about missing dependencies (e.g., `ModuleNotFoundError: No module named 'jwt'`), add them with:
-```bash
-poetry add pyjwt
+# Create and configure .env file
+cp env.example .env
+# Edit .env with your actual API keys and credentials
 ```
 
 ### 3. Run Backend Tests
 From the `backend` directory:
 ```bash
-PYTHONPATH=. poetry run pytest
+PYTHONPATH=. python3 -m pytest
 ```
 
 ### 4. Frontend Setup
