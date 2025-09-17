@@ -2,15 +2,12 @@
 """
 Startup script for the FastAPI server
 """
-import os
+
 import sys
 from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
-
-# Set the credentials path
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = '/Users/satvikb/Work/UniversalChat/backend/credentials/service-account.json'
 
 # Add current directory to Python path
 sys.path.append('.')

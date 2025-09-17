@@ -2,15 +2,11 @@
 """
 Simple test script to verify Firestore connection
 """
-import os
-from dotenv import load_dotenv
-
-# Load environment variables
-load_dotenv()
+from env_values import GOOGLE_APPLICATION_CREDENTIALS
 
 print("Environment variables:")
-print(f"GOOGLE_APPLICATION_CREDENTIALS: {os.getenv('GOOGLE_APPLICATION_CREDENTIALS')}")
-print(f"File exists: {os.path.exists(os.getenv('GOOGLE_APPLICATION_CREDENTIALS', ''))}")
+print(f"GOOGLE_APPLICATION_CREDENTIALS: {GOOGLE_APPLICATION_CREDENTIALS}")
+print(f"File exists: {os.path.exists(GOOGLE_APPLICATION_CREDENTIALS)}")
 
 try:
     from clients.firestore.firestore_client import FirestoreClient

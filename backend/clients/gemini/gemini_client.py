@@ -1,6 +1,8 @@
-import os
+
 import requests
 from typing import Any, Dict, List, Optional
+from env_values import GEMINI_API_KEY
+from env_values import GEMINI_API_URL
 
 class GeminiClient:
     """
@@ -11,11 +13,11 @@ class GeminiClient:
         """
         Initialize the Gemini client. Loads API key from env var if not provided.
         """
-        self.api_key = api_key or os.getenv("GEMINI_API_KEY")
+        self.api_key = api_key or GEMINI_API_KEY
         if not self.api_key:
             raise ValueError("GEMINI_API_KEY not set in environment or provided to GeminiClient.")
         # TODO: Optionally load from Secret Manager if running on GCP
-        self.base_url = os.getenv("GEMINI_API_URL", "https://api.gemini.com/v1")  # Example URL
+        self.base_url = GEMINI_API_URL
 
     def extract_relations(self, text: str) -> List[Dict[str, Any]]:
         """
