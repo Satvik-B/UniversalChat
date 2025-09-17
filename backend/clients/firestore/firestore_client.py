@@ -3,6 +3,7 @@ from typing import Any, Optional
 from google.cloud import firestore
 from google.api_core.exceptions import NotFound
 from dotenv import load_dotenv
+from env_values import GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
 
 # Load environment variables
 load_dotenv()
@@ -35,6 +36,32 @@ class FirestoreClient:
             if doc.exists:
                 tokens = doc.to_dict().get("tokens", {})
                 return tokens.get("access_token")
+            return None
+        except NotFound:
+            return None
+        except Exception as e:
+            # TODO: Add logging
+            return None
+        
+    def get_user_credentials(self, user_id: str) -> Optional[dict]:
+        """
+        Fetch the user's Google OAuth credentials (access and refresh tokens) from Firestore.
+        """
+        try:
+            doc = self.db.collection("users").document(user_id).get()
+            if doc.exists:
+                tokens = doc.to_dict().get("tokens", {})
+                refresh_token = tokens.get("refresh_token")
+                from google.oauth2.credentials import Credentials
+                return Credentials.from_authorized_user_info(
+                            info={
+                                "refresh_token": refresh_token,
+                                "token_uri": "https://oauth2.googleapis.com/token",
+                                "client_id": GOOGLE_CLIENT_ID,
+                                "client_secret": GOOGLE_CLIENT_SECRET,
+                            },
+                            scopes=["https://www.googleapis.com/auth/drive.readonly"] # Specify scopes
+                        )
             return None
         except NotFound:
             return None

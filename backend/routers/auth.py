@@ -34,7 +34,6 @@ def callback(request: Request, response: Response, code: Optional[str] = None):
     Exchange the code for tokens, verify the ID token, store user info and tokens in Firestore, and issue a JWT.
     """
     if not code:
-        print("Missing code parameter")
         raise HTTPException(status_code=400, detail="Missing code parameter")
     try:
         tokens = AuthService.exchange_code_for_tokens(code)
