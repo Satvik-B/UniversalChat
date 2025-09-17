@@ -17,7 +17,7 @@ class BaseIngestionWorker(abc.ABC):
         Default implementation: Split document text into chunks (e.g., paragraphs).
         Subclasses may override for custom chunking logic.
         """
-        return [chunk for chunk in doc_text.split('\n\n') if chunk.strip()]
+        return [doc_text[i:i+1000] for i in range(0, len(doc_text), 1000)]  # Simple fixed-size chunking
 
     @abc.abstractmethod
     def extract_relations_with_gemini(self, chunks: List[str]) -> List[Dict[str, Any]]:

@@ -17,19 +17,18 @@ class GDocsIngestionWorker(BaseIngestionWorker):
         self.firestore_client = firestore_client
         self.gemini_client = gemini_client
 
-    def fetch_document_content(self, doc_id: str, user_id: str) -> str:
+    def fetch_document_content(self, doc_id: str, user_id: str) -> tuple[str, str]:
         """
         Fetch the raw text of a Google Doc using the user's credentials.
         Uses FirestoreClient to get the user's access token, then Google Docs API to fetch content.
         """
-        access_token = self.firestore_client.get_user_token(user_id)
-        if not access_token:
-            raise Exception(f"No access token found for user {user_id}")
-        creds = Credentials(token=access_token)
+        creds = self.firestore_client.get_user_credentials(user_id)
+        if not creds:
+            raise Exception(f"No credentials found for user {user_id}")
+
         service = build('docs', 'v1', credentials=creds)
         doc = service.documents().get(documentId=doc_id).execute()
-        print(doc)
-        return self._extract_text_from_document(doc)
+        return self._extract_text_from_document(doc), doc.get("title", "Untitled Document")
 
     def _extract_text_from_document(self, doc: dict) -> str:
         """
@@ -46,14 +45,18 @@ class GDocsIngestionWorker(BaseIngestionWorker):
                     text.append(txt)
         return "".join(text)
 
-    def extract_relations_with_gemini(self, chunks: List[str]) -> List[Dict[str, Any]]:
+    def extract_relations_with_gemini(self, chunks: List[str], doc_title: str, doc_id: str) -> List[Dict[str, Any]]:
         """
         Call the Gemini API to extract entities and relationships from each chunk.
         Uses GeminiClient.
         """
+        print(f"Extracting relations for doc_id: {doc_id} with title: {doc_title}")  # Debug print
         relations = []
         for chunk in chunks:
-            rel = self.gemini_client.extract_relations(chunk)
+            prompt = self._create_relations_prompt(doc_text=chunk, doc_title=doc_title, doc_id=doc_id)
+            print(f"Prompt sent to Gemini for doc_id {doc_id}: {prompt[:500]}")
+            rel = self.gemini_client.call_llm(prompt)
+            print("Gemini response:", rel)  # Debug print
             relations.extend(rel)
         return relations
 
@@ -77,3 +80,54 @@ class GDocsIngestionWorker(BaseIngestionWorker):
         Uses FirestoreClient.
         """
         self.firestore_client.update_status(doc_id, status, error)
+
+    def _create_relations_prompt(self, doc_text: str, doc_title: str, doc_id: str) -> str:
+        """
+        Create a prompt for the Gemini API to extract relations from the given text.
+        """
+        return f"# ROLE & GOAL \
+                    You are an expert Knowledge Graph extraction system. Your goal is to read the provided document context (ID, title, and body) and identify all key entities and their relationships. You must structure these relationships as a list of JSON objects, each representing a (Subject, Relation, Object) triplet. \
+                    \
+                    # SCHEMA DEFINITION \
+                    You MUST strictly adhere to the following entity and relation types. Do not create new types.\
+                    \
+                    ## Entity Types:\
+                    - Document: The document itself.\
+                    - Person: An individual\'s name (e.g., \"Alice Smith\").\
+                    - Project: A named project or initiative (e.g., \"Project Phoenix\"). \
+                    - Team: A named group or department (e.g., \"Marketing Team\").\
+                    - Organization: A company or institution (e.g., \"Acme Corp\").\
+                    - Date: A specific date or deadline (e.g., \"September 17, 2025\").\
+                    - Task: A specific action item or deliverable.\
+                    - Concept: An important abstract idea or topic mentioned (e.g., \"user engagement\").\
+                    \
+                    ## Relation Types:\
+                    - HAS_TITLE: Connects the document ID to its title.\
+                    - CONTAINS_CONTENT: Connects the document to a key entity mentioned within it.\
+                    - MENTIONS: A subject entity refers to an object entity.\
+                    - ASSIGNED_TO: A task is assigned to a Person or Team.\
+                    - DUE_ON: A project or task has a specific deadline.\
+                    - PART_OF: An entity is a component of a larger project or team.\
+                    - REPORTS_TO: A person reports to another person.\
+                    - WORKS_ON: A person or team works on a project.\
+                    \
+                    # OUTPUT FORMAT\
+                    - The output MUST be a valid JSON array `[]`.\
+                    - Each element in the array is a JSON object representing a single relation.\
+                    - Each object must have three keys: \"subject\", \"relation\", and \"object\".\
+                    - The document itself should be identified by its ID.\
+                    \
+                    # DOCUMENT CONTEXT\
+                    - Document ID: \"{doc_id}\"\
+                    - Document Title: \"{doc_title}\"\
+                    - Document Body: \
+                    \"\"\"\
+                    {doc_text}\
+                    \"\"\"\
+                    \
+                    # EXTRACTED RELATIONS (JSON OUTPUT ONLY):\
+                    ```json\
+                    [\
+                    // expecting your JSON output here\
+                    ]\
+            "
