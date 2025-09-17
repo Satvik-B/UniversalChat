@@ -6,12 +6,10 @@ from google.oauth2 import id_token as google_id_token
 from google.auth.transport import requests as google_requests
 from google.cloud import firestore
 
-import os
+from env_values import GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REDIRECT_URI
+from env_values import JWT_SECRET
 
-GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "<YOUR_GOOGLE_CLIENT_ID>")
-GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET", "<YOUR_GOOGLE_CLIENT_SECRET>")
-GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI", "<YOUR_BACKEND_URL>/auth/callback")
-JWT_SECRET = os.getenv("JWT_SECRET", "<YOUR_JWT_SECRET>")
+
 JWT_ALGORITHM = "HS256"
 
 class AuthService:

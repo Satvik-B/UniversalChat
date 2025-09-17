@@ -3,25 +3,25 @@ from fastapi.responses import RedirectResponse, JSONResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Optional
 from services.auth.auth_service import AuthService
-import os
+from env_values import GOOGLE_CLIENT_ID, GOOGLE_REDIRECT_URI
 
 router = APIRouter()
 security = HTTPBearer()
-
-GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "<YOUR_GOOGLE_CLIENT_ID>")
-GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI", "<YOUR_BACKEND_URL>/auth/callback")
 
 @router.get("/auth/login")
 def login():
     """
     Redirect the user to Google's OAuth 2.0 authorization endpoint.
     """
+    drive_scope = "https://www.googleapis.com/auth/drive.readonly"
+
     google_oauth_url = (
         f"https://accounts.google.com/o/oauth2/v2/auth?"
         f"client_id={GOOGLE_CLIENT_ID}&"
         f"redirect_uri={GOOGLE_REDIRECT_URI}&"
         f"response_type=code&"
-        f"scope=openid%20email%20profile&"
+        # --- MODIFIED LINE ---
+        f"scope=openid%20email%20profile%20{drive_scope}&"
         f"access_type=offline&"
         f"prompt=consent"
     )
@@ -34,6 +34,7 @@ def callback(request: Request, response: Response, code: Optional[str] = None):
     Exchange the code for tokens, verify the ID token, store user info and tokens in Firestore, and issue a JWT.
     """
     if not code:
+        print("Missing code parameter")
         raise HTTPException(status_code=400, detail="Missing code parameter")
     try:
         tokens = AuthService.exchange_code_for_tokens(code)

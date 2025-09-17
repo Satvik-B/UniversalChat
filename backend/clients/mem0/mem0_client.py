@@ -1,4 +1,4 @@
-import os
+
 import requests
 from typing import Any, Dict, List, Optional
 
@@ -12,9 +12,10 @@ class Mem0Client:
         Initialize the Mem0 client for a specific instance.
         """
         self.instance_url = instance_url.rstrip("/")
-        self.api_key = api_key or os.getenv("MEM0_API_KEY")
+        self.api_key = api_key
         if not self.api_key:
-            raise ValueError("MEM0_API_KEY not set in environment or provided to Mem0Client.")
+            raise ValueError("api_key not provided to Mem0Client.")
+        self.base_url = instance_url
 
     def store_chunks(self, doc_id: str, chunks: List[str]) -> None:
         """

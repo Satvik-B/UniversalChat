@@ -6,19 +6,20 @@ from services.gdocs.gdocs_ingestion_worker import GDocsIngestionWorker
 from clients.firestore.firestore_client import FirestoreClient
 from clients.gemini.gemini_client import GeminiClient
 from clients.mem0.mem0_client import Mem0Client
+from env_values import MEM0_GDOCS_INSTANCE_URL, MEM0_GDOCS_API_KEY, MEM0_RELATIONS_INSTANCE_URL, MEM0_RELATIONS_API_KEY
 
 router = APIRouter()
 
 # Example: Dependency injection or global setup
-import os
+
 firestore_client = FirestoreClient()
 gdocs_mem0_client = Mem0Client(
-    instance_url=os.getenv("MEM0_GDOCS_INSTANCE_URL", "https://mem0-gdocs.example.com"), 
-    api_key=os.getenv("MEM0_GDOCS_API_KEY", "gdocs-key")
+    instance_url=MEM0_GDOCS_INSTANCE_URL, 
+    api_key=MEM0_GDOCS_API_KEY
 )
 relations_mem0_client = Mem0Client(
-    instance_url=os.getenv("MEM0_RELATIONS_INSTANCE_URL", "https://mem0-relations.example.com"), 
-    api_key=os.getenv("MEM0_RELATIONS_API_KEY", "relations-key")
+    instance_url=MEM0_RELATIONS_INSTANCE_URL, 
+    api_key=MEM0_RELATIONS_API_KEY
 )
 gemini_client = GeminiClient()
 ingestion_worker = GDocsIngestionWorker(
